@@ -359,7 +359,11 @@ public class NativeND2Reader extends FormatReader {
     channelColors = new HashMap<String, Integer>();
 
     if (in.read() == -38 && in.read() == -50) {
-      initModernND2File(useChunkMap);
+      LOGGER.debug("* Reading {} filesize is {}", id, in.length());
+      LOGGER.debug("* First run with classic code ...");
+      initModernND2File(false);
+      LOGGER.debug("* Second run with chunk map code ...");
+      initModernND2File(true);
     } else {
       initLegacyJP2ND2File();
     }
@@ -563,6 +567,7 @@ public class NativeND2Reader extends FormatReader {
         int percent = (int) (100 * fp / in.length());
         LOGGER.info("Parsing block '{}' {}%", blockType, percent);
         blockCount++;
+        LOGGER.debug("* Parsing {} at {} length {} (new blockcount {})", nameAttri, fp, dataLength, blockCount);
 
         int skip = len - 12 - nameLength * 2;
         if (skip <= 0) skip += nameLength * 2;
@@ -663,6 +668,7 @@ public class NativeND2Reader extends FormatReader {
 
               percent = (int) (100 * entry.position / in.length());
               LOGGER.info("Parsing block '{}' {}%", "ImageDataSeq", percent);
+              LOGGER.debug("* Adding block from chunkmap {} at {} length {} (new blockcount {})", entry.name, entry.position, entry.length, blockCount);
             }
 
             blockCount --; // one was already added by the outer blockCount ++;
@@ -1556,6 +1562,21 @@ public class NativeND2Reader extends FormatReader {
           setSeries(0);
         }
       }
+
+      LOGGER.debug("* FINAL CONTENTS imageNames = {}", Arrays.deepToString(imageNames.toArray()));
+      LOGGER.debug("* FINAL CONTENTS imageOffsets = {}", Arrays.deepToString(imageOffsets.toArray()));
+      LOGGER.debug("* FINAL CONTENTS imageLengths = {}", Arrays.deepToString(imageLengths.toArray()));
+
+      LOGGER.debug("* FINAL CONTENTS customDataOffsets = {}", Arrays.deepToString(customDataOffsets.toArray()));
+      LOGGER.debug("* FINAL CONTENTS customDataLengths = {}", Arrays.deepToString(customDataLengths.toArray()));
+
+      LOGGER.debug("* FINAL blockCount = {}", blockCount);
+      LOGGER.debug("* FINAL firstOffset = {}", firstOffset);
+      LOGGER.debug("* FINAL secondOffset = {}", secondOffset);
+      LOGGER.debug("* FINAL planeSize = {}", planeSize);
+
+      LOGGER.debug("* FINAL planeCount = {}", planeCount);
+      LOGGER.debug("* FINAL numSeries = {}", numSeries);
 
       populateMetadataStore(handler);
     }
